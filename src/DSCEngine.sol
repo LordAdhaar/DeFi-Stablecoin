@@ -152,10 +152,8 @@ contract DSCEngine is ReentrancyGuard {
         return totalCollateralValueInUSD;
     }
 
-    function getUSDValueOfCollateral(address tokenAddress, uint256 tokenAmount) private view returns (uint256) {
-        // Implement chainlink pricefeed to get the amount of 1 token in USD
-        // Multiply that with tokenAmount to get the USD value of the collateral of the user
-        AggregatorV3Interface priceFeed = AggregatorV3Interface(tokenAddress);
+    function getUSDValueOfCollateral(address tokenAddress, uint256 tokenAmount) public view returns (uint256) {
+        AggregatorV3Interface priceFeed = AggregatorV3Interface(s_priceFeeds[tokenAddress]);
         (, int256 price,,,) = priceFeed.latestRoundData();
 
         return (uint256(price) * ADDITIONAL_FEED_PRECISION * tokenAmount) / PRECISION;
@@ -172,5 +170,9 @@ contract DSCEngine is ReentrancyGuard {
 
     function getPrecision() public pure returns (uint256) {
         return PRECISION;
+    }
+
+    function getUserToCollateralTokenAmount(address user, address tokenAddress) public view returns (uint256) {
+        return s_userToCollateralAmount[user][tokenAddress];
     }
 }

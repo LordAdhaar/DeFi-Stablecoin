@@ -13,7 +13,7 @@ contract DeployDSCScript is Script {
     address[] public tokenAddresses;
     address[] public priceFeedAddresses;
 
-    function run() public returns (DecentralizedStableCoin, DSCEngine) {
+    function run() public returns (DecentralizedStableCoin, DSCEngine, HelperConfig.NetworkConfig memory) {
         HelperConfig helperConfig = new HelperConfig();
         HelperConfig.NetworkConfig memory activeNetworkConfig = helperConfig.getActiveNetworkConfig();
 
@@ -29,6 +29,6 @@ contract DeployDSCScript is Script {
 
         vm.stopBroadcast();
 
-        return (decentralizedStableCoin, dscEngine);
+        return (decentralizedStableCoin, dscEngine, activeNetworkConfig);
     }
 }
