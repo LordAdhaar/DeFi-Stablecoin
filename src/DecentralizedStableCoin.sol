@@ -3,11 +3,13 @@ pragma solidity 0.8.28;
 
 // This is considered an Exogenous, Decentralized, Anchored (pegged), Crypto Collateralized low volitility coin
 
-// Layout of Contract:
+// Layout of the contract file:
 // version
 // imports
-// interfaces, libraries, contracts
 // errors
+// interfaces, libraries, contract
+
+// Inside Contract:
 // Type declarations
 // State variables
 // Events
@@ -22,7 +24,11 @@ pragma solidity 0.8.28;
 // public
 // internal
 // private
-// view & pure functions
+// within function:
+// payable
+// non - payable
+// view
+// pure
 
 /// @title DecentralizedStableCoin
 /// @author Adhaar Jain
@@ -41,9 +47,7 @@ error DecentralizedStableCoin__BurnValueLessThanBalanceOfSender();
 error DecentralizedStableCoin__MintAmountLessThanZero();
 
 contract DecentralizedStableCoin is ERC20, ERC20Burnable, Ownable {
-    constructor(
-        address initialOwner
-    ) ERC20("DecentralizedStableCoin", "DSC") Ownable(initialOwner) {}
+    constructor() ERC20("DecentralizedStableCoin", "DSC") Ownable(msg.sender) {}
 
     function burn(uint256 value) public override onlyOwner {
         uint256 balances = balanceOf(msg.sender);
