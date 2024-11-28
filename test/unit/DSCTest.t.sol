@@ -17,17 +17,47 @@ contract DSCTest is Test {
     HelperConfig.NetworkConfig public activeNetwork;
 
     address public wethAdress;
-    uint256 public constant WETH_DEPOSIT_AMOUNT = 5e7;
-    uint256 public constant BOB_STARTING_WETH_BALANCE = 1e8;
+    address public wethPriceFeedUSD;
+    address public btcPriceFeedUSD;
+
     address public BOB = makeAddr("bob");
+    uint256 public constant BOB_STARTING_WETH_BALANCE = 20e18;
+
+    uint256 public constant WETH_DEPOSIT_AMOUNT = 10e18;
+    uint256 public constant WETH_REDEEM_AMOUNT = 5e18;
+
+    uint256 public constant BOB_DSC_TO_BE_MINTED = 10000e18;
+    uint256 public constant BOB_DSC_TO_BE_BURNT = 5000e18;
 
     function setUp() external {
         deployDSCScript = new DeployDSCScript();
         (decentralizedStableCoin, dscEngine, activeNetwork) = deployDSCScript.run();
 
         wethAdress = activeNetwork.wETH;
+        wethPriceFeedUSD = activeNetwork.wethPriceFeedUSD;
+        btcPriceFeedUSD = activeNetwork.wbtcPriceFeedUSD;
 
         ERC20Mock(wethAdress).mint(BOB, BOB_STARTING_WETH_BALANCE);
+    }
+
+    //////////////////////////////////
+    ///// Contructor Test ///////////
+    ////////////////////////////////
+
+    address[] public tokenAddresses;
+    address[] public priceFeedAddresses;
+
+    function testRevertIfTokenAndPriceFeedArraysLengthUnequal() public {
+        tokenAddresses.push(wethAdress);
+        priceFeedAddresses.push(wethPriceFeedUSD);
+        priceFeedAddresses.push(btcPriceFeedUSD);
+
+        vm.expectRevert(DSCEngine.DSCEngine__TokenAndPricfeedArrayLengthDifferent.selector);
+        new DSCEngine(tokenAddresses, priceFeedAddresses, address(decentralizedStableCoin));
+    }
+
+    function testOwnerTransferredToDSCEngine() public view {
+        assertEq(address(dscEngine), decentralizedStableCoin.owner());
     }
 
     function testGetUSDValue() public view {
@@ -36,19 +66,62 @@ contract DSCTest is Test {
         assertEq(wethInUSD, 30000e18);
     }
 
-    function testDepositCollateral() public {
-        vm.startPrank(BOB);
+    function testGetCollateralAmountFromDebtCovered() public view {
+        uint256 usdAmount = 4000e18;
+        uint256 expectedAmount = 2e18;
+        uint256 actualWeth = dscEngine.getCollateralAmountFromDebtCovered(wethAdress, usdAmount);
 
-        ERC20Mock(wethAdress).approve(address(dscEngine), 1e8);
-        dscEngine.depositCollateral(wethAdress, WETH_DEPOSIT_AMOUNT);
-        vm.stopPrank();
-
-        uint256 bobCollateralAmount = dscEngine.getUserToCollateralTokenAmount(BOB, wethAdress);
-
-        assertEq(bobCollateralAmount, 5e7);
+        assertEq(actualWeth, expectedAmount);
     }
 
-    function testOwnerTransferredToDSCEngine() public view {
-        assertEq(address(dscEngine), decentralizedStableCoin.owner());
+    ////////////////////////////
+    ///// Modifiers ///////////
+    //////////////////////////
+
+    //create modifier where we deposit somem collateral as bob
+    modifier depositCollateral() {
+        vm.startPrank(BOB);
+        ERC20Mock(wethAdress).approve(address(dscEngine), WETH_DEPOSIT_AMOUNT);
+        dscEngine.depositCollateral(wethAdress, WETH_DEPOSIT_AMOUNT);
+        vm.stopPrank();
+        _;
+    }
+
+    modifier depositCollateralAndMintDSC() {
+        vm.startPrank(BOB);
+        ERC20Mock(wethAdress).approve(address(dscEngine), WETH_DEPOSIT_AMOUNT);
+        dscEngine.depositCollateralAndMintDSC(wethAdress, WETH_DEPOSIT_AMOUNT, BOB_DSC_TO_BE_MINTED);
+        vm.stopPrank();
+        _;
+    }
+
+    function testDepositCollateral() public depositCollateral {
+        uint256 bobCollateralAmount = dscEngine.getUserToCollateralTokenAmount(BOB, wethAdress);
+
+        assertEq(bobCollateralAmount, WETH_DEPOSIT_AMOUNT);
+    }
+
+    function testDepositCollateralAndMintDSC() public depositCollateralAndMintDSC {
+        uint256 bobCollateralAmount = dscEngine.getUserToCollateralTokenAmount(BOB, wethAdress);
+        uint256 bobDSCBalance = dscEngine.getUserToDSCBalance(BOB);
+
+        assertEq(bobCollateralAmount, WETH_DEPOSIT_AMOUNT);
+        assertEq(bobDSCBalance, BOB_DSC_TO_BE_MINTED);
+    }
+
+    function testRedeemCollateralForDSC() public depositCollateralAndMintDSC {
+        uint256 bobCollateralAmount = dscEngine.getUserToCollateralTokenAmount(BOB, wethAdress);
+        uint256 bobDSCBalance = dscEngine.getUserToDSCBalance(BOB);
+
+        vm.startPrank(BOB);
+        ERC20Mock(address(decentralizedStableCoin)).approve(address(dscEngine), BOB_DSC_TO_BE_BURNT);
+        dscEngine.redeemCollateralForDSC(wethAdress, WETH_REDEEM_AMOUNT, BOB_DSC_TO_BE_BURNT);
+        vm.stopPrank();
+
+        bobCollateralAmount = dscEngine.getUserToCollateralTokenAmount(BOB, wethAdress);
+        bobDSCBalance = dscEngine.getUserToDSCBalance(BOB);
+
+        assertEq(bobCollateralAmount, WETH_DEPOSIT_AMOUNT - WETH_REDEEM_AMOUNT);
+        assertEq(bobDSCBalance, BOB_DSC_TO_BE_MINTED - BOB_DSC_TO_BE_BURNT);
     }
 }

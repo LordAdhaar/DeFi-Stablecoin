@@ -7,3 +7,12 @@ remappings = [
     "@chainlink/contracts/=lib/chainlink-brownie-contracts/contracts",
 ]
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
+
+# fuzz testing is stateless testing 
+# invariant is statefull testing
+# invariant == properties of system that should always hold
+
+[invariant]
+runs = 128
+depth = 128
+fail_on_revert = true
