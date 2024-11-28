@@ -26,6 +26,35 @@ contract Handler is Test {
         dscEngine.depositCollateral(tokenAddress, tokenAmount);
     }
 
+    function handleRedeemCollateral(uint256 randomNumber, uint256 tokenAmount) public {
+        address tokenAddress = getValidCollateralAddress(randomNumber);
+        uint256 collateralBalance = dscEngine.getUserToCollateralTokenAmount(address(this), tokenAddress);
+
+        tokenAmount = bound(tokenAmount, 0, collateralBalance);
+
+        if (tokenAmount == 0) {
+            return;
+        }
+
+        dscEngine.redeemCollateral(tokenAddress, tokenAmount);
+    }
+
+    // function handleMintDsc(uint256 tokenAmount) public {
+    //     (uint256 amountMinted, uint256 collateralValueInUsd) = dscEngine.getAccountInformation(address(this));
+    //     int256 maxDscToMint = (int256(collateralValueInUsd) / 2) - int256(amountMinted);
+
+    //     if (maxDscToMint < 0) {
+    //         return;
+    //     }
+
+    //     tokenAmount = bound(tokenAmount, 0, uint256(maxDscToMint));
+
+    //     if (tokenAmount == 0) {
+    //         return;
+    //     }
+    //     dscEngine.mintDSC(tokenAmount);
+    // }
+
     function getValidCollateralAddress(uint256 randomNumber) public view returns (address) {
         address[] memory tokenAddresses = dscEngine.getTokensAcceptedAsCollateral();
 

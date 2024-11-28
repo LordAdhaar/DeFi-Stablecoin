@@ -146,7 +146,6 @@ contract DSCEngine is ReentrancyGuard {
     function redeemCollateralForDSC(address collateralAddress, uint256 collateralAmount, uint256 amountDSC) public {
         burnDSC(amountDSC);
         redeemCollateral(collateralAddress, collateralAmount);
-        _revertIfHealthFactorIsBroken(msg.sender);
     }
 
     function redeemCollateral(address tokenAddress, uint256 tokenAmount)
@@ -330,7 +329,7 @@ contract DSCEngine is ReentrancyGuard {
 
     function _redeemCollateral(address tokenAddress, uint256 tokenAmount, address from, address to) private {
         s_userToCollateralAmount[from][tokenAddress] -= tokenAmount;
-
+        console.log("userCollateralBalance", s_userToCollateralAmount[from][tokenAddress]);
         emit CollateralRedeemed(from, to, tokenAddress, tokenAmount);
 
         bool success = IERC20(tokenAddress).transfer(to, tokenAmount);
