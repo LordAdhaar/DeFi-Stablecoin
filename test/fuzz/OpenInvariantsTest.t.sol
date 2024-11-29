@@ -47,6 +47,11 @@ contract OpenInvariantsTest is Test {
         uint256 wethCollateralAmountInUsd = dscEngine.getUSDValueOfCollateral(wethTokenAddress, wethCollateralAmount);
         uint256 wbtcCollateralAmountInUsd = dscEngine.getUSDValueOfCollateral(wbtcTokenAddress, wbtcCollateralAmount);
 
+        console.log("weth: ", wethCollateralAmountInUsd);
+        console.log("wbtc: ", wbtcCollateralAmountInUsd);
+        console.log("total supply of dsc: ", totalMintedDsc);
+        console.log("times mint is called: ", handler.getTimesMintCalled());
+
         assert(totalMintedDsc <= wethCollateralAmountInUsd + wbtcCollateralAmountInUsd);
     }
 }
