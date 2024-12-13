@@ -1,35 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.28;
 
-// This is considered an Exogenous, Decentralized, Anchored (pegged), Crypto Collateralized low volitility coin
-
-// Layout of the contract file:
-// version
-// imports
-// errors
-// interfaces, libraries, contract
-
-// Inside Contract:
-// Type declarations
-// State variables
-// Events
-// Modifiers
-// Functions
-
-// Layout of Functions:
-// constructor
-// receive function (if exists)
-// fallback function (if exists)
-// external
-// public
-// internal
-// private
-// within function:
-// payable
-// non - payable
-// view
-// pure
-
 /// @title DecentralizedStableCoin
 /// @author Adhaar Jain
 /// @notice Stablecoin pegged to the dollar, minted and burnt through algorithms to keep it decentralized and can be borrowed against eth and btc as collateral
