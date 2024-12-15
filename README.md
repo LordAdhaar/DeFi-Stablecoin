@@ -1,7 +1,5 @@
 # DeFi Stablecoin
 
-This is a section of the Cyfrin Foundry Solidity Course.
-
 [DSCEngine Example](https://sepolia.etherscan.io/address/0x76a5d94c5bf08deb55e284efee0fd14c8a0c2f99#code)
 [Decentralized Stablecoin Example](https://sepolia.etherscan.io/address/0x772503133254ec61280adf2c53d27e761396a414#code)
 
